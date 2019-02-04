@@ -1,0 +1,22 @@
+{
+  "name": "lighthouse-metrics",
+  "version": "1.0.0",
+  "description": "- Terraform (I'm using v0.11.7) - https://www.terraform.io/docs/providers/google/getting_started.html#before-you-begin - Make a new GCP project (mine is called \"lighthouse-metrics\" - Do the thing about \"adding credentials\" -- create a JSON credential and download it to this project's root directory - terraform init - enable GKE api in console - install `gcloud` - gcloud components install kubectl - gcloud auth activate-service-account --key-file=./account.json - get a kubeconfig: gcloud container clusters get-credentials lighthouse-metrics --zone=us-west1-a --project=lighthouse-metrics",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stuartsan/lighthouse-metrics.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stuartsan/lighthouse-metrics/issues"
+  },
+  "homepage": "https://github.com/stuartsan/lighthouse-metrics#readme",
+  "dependencies": {
+    "@kubernetes/client-node": "^0.8.0"
+  }
+}
