@@ -1,6 +1,6 @@
 # Plug in your unique configuration here 
 locals {
-  app_version         = "0.0.80"
+  app_version         = "0.0.81"
   org                 = "ss"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"
@@ -16,31 +16,14 @@ provider "aws" {
   profile                 = "${local.aws_profile_name}"
 }
 
-# The bucket is used for three things, which we'll store
-# under different prefixes (pseudo "directories"):
-#
-# - raw_reports/ for the raw html/json reports from Lighthouse.
-#   This will be a lot of data; we'll set it to expire after 30d.
-# - aggregate_reports/ for the long-term reports we want to keep indefinitely
-# - lambda/ as a place to deploy our lambda functions 
+# Bucket for storing LH reports, and deployed lambda functions.
 resource "aws_s3_bucket" "lighthouse_metrics" {
   bucket = "${local.org}-lighthouse-metrics"
   acl    = "private"
-
-  lifecycle_rule {
-    prefix = "raw_reports/"
-
-    enabled = true
-
-    expiration {
-      days = 30
-    }
-  }
 }
 
-# Here we will store both the aggregate results for a given job, as well as
-# job status, which will be streamed to a lambda function that can then do
-# some post-processing once all the LH runs are complete
+# Here we will store job metadata, including status 
+# (e.g. # of LH runs complete)
 resource "aws_dynamodb_table" "lighthouse_metrics_jobs" {
   name = "LighthouseMetricsJobs"
 
@@ -58,8 +41,7 @@ resource "aws_dynamodb_table" "lighthouse_metrics_jobs" {
   stream_view_type = "NEW_AND_OLD_IMAGES"
 }
 
-# And here we will store the long term metrics from each LH run that we care
-# about.
+# And here we will store metadata about individual runs
 resource "aws_dynamodb_table" "lighthouse_metrics_runs" {
   name = "LighthouseMetricsRuns"
 
@@ -67,6 +49,8 @@ resource "aws_dynamodb_table" "lighthouse_metrics_runs" {
 
   hash_key = "RunId"
 
+  # So that we can more efficiently say "get me the metadata for all
+  # the runs in a particular job"
   global_secondary_index {
     name            = "JobIdIndex"
     hash_key        = "JobId"
@@ -87,7 +71,8 @@ resource "aws_dynamodb_table" "lighthouse_metrics_runs" {
 resource "aws_sns_topic" "pages_to_test" {
   name = "lighthouse-pages-to-test"
 
-  # so sns can write logs on our behalf re: delivery
+  # so sns can write logs on our behalf re: delivery...couldn't get
+  # this to work properly but would be good to figure out
   # lambda_success_feedback_role_arn = "${aws_iam_role.lambda_worker.arn}"
   # lambda_failure_feedback_role_arn = "${aws_iam_role.lambda_worker.arn}"
 }

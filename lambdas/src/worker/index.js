@@ -147,7 +147,8 @@ exports.handler = async function(event, context) {
   }
 
   const { chrome, start } = await createLighthouse(url, {
-    output: ["json", "html"]
+    output: ["json", "html"],
+    throttling: { cpuSlowdownMultiplier: 1 }
   });
   const results = await start();
 
@@ -173,9 +174,8 @@ exports.handler = async function(event, context) {
       htmlReport
     );
   } catch (err) {
-    // in the rare event of failure here,
     // we will keep rolling instead of letting this trigger a re-run.
-    // we have already collected what we care about most!
+    // this kinda failure should be rare.
     console.log("error uploading reports to s3:", err);
   }
 
