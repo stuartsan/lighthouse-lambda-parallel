@@ -1,6 +1,7 @@
 {
   "dependencies": {
+    "@serverless-chrome/lambda": "^1.0.0-55",
     "is-port-reachable": "^2.0.0",
-    "lighthouse-lambda": "^3.1.1"
+    "lighthouse": "^4.1.0"
   }
 }

@@ -1,34 +1,12 @@
 const AWS = require("aws-sdk");
-const createLighthouse = require("lighthouse-lambda");
-const spawn = require("child_process").spawn;
+
+const createLighthouse = require("./create-lighthouse.js");
 const fs = require("fs");
-const isPortReachable = require("is-port-reachable");
 
 AWS.config.update({ region: process.env.REGION });
 
 const ddb = new AWS.DynamoDB.DocumentClient();
 const s3 = new AWS.S3();
-
-async function waitForProxy() {
-  while (!(await isPortReachable(1080))) {
-    console.log("waiting for proxy...");
-  }
-  return Promise.resolve();
-}
-
-// HAHHAHAHAHA
-// https://github.com/WPO-Foundation/tsproxy
-const p = spawn(
-  "python2.7",
-  ["tsproxy.py", "--rtt=150", "--inkbps=1600", "--outkbps=750"],
-  { detatched: true, stdio: ["ignore", "inherit", "inherit"] }
-);
-
-p.on("error", err => {
-  console.log("errrrrror", err);
-});
-
-p.unref();
 
 async function updateJobItemAndCreateRunItem(
   jobId,
@@ -172,8 +150,6 @@ exports.handler = async function(event, context) {
   if (process.env.SIMULATE_EXCEPTION_BEFORE_LH_RUN) {
     throw new Error("Failed! On purpose though. Before LH run.");
   }
-
-  await waitForProxy();
 
   const { chrome, start } = await createLighthouse(url, {
     ...lighthouseOpts,

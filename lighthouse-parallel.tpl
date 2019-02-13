@@ -41,10 +41,7 @@ lambda_payload = {
         '--no-sandbox',
         '--single-process',
         '--hide-scrollbars',
-        '--proxy-server=socks5://localhost:1080',
-      ],
-      'throttlingMethod': 'provided',
-      'disableDeviceEmulation': True
+      ]
     }
 }
 

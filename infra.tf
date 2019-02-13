@@ -1,12 +1,12 @@
 # Plug in your unique configuration here 
 locals {
-  app_version         = "0.0.88"
+  app_version         = "0.0.91"
   org                 = "ss"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"
   aws_profile_name    = "lighthouseMetrics"
 
-  lambda_worker_memory  = 3008
+  lambda_worker_memory  = 2048
   lambda_worker_timeout = 30
 }
 
