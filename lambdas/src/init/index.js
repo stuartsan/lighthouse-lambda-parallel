@@ -22,7 +22,7 @@ async function createJobItemDynamo(jobId, startTime, totalPages) {
     .promise();
 }
 
-const createSNSMessages = (urls, jobId) => {
+const createSNSMessages = (urls, jobId, lighthouseOpts = {}) => {
   return urls.map(url => ({
     Message: "url ready to process",
     MessageAttributes: {
@@ -33,6 +33,10 @@ const createSNSMessages = (urls, jobId) => {
       URL: {
         DataType: "String",
         StringValue: url
+      },
+      LighthouseOptions: {
+        DataType: "String",
+        StringValue: JSON.stringify(lighthouseOpts)
       }
     },
     TopicArn: process.env.SNS_TOPIC_ARN
@@ -61,7 +65,7 @@ exports.handler = async function(event, context, callback) {
   });
 
   await createJobItemDynamo(jobId, now.toISOString(), urls.length);
-  const snsMessages = createSNSMessages(urls, jobId);
+  const snsMessages = createSNSMessages(urls, jobId, event.lighthouseOpts);
 
   await Promise.all(snsMessages.map(msg => sns.publish(msg).promise()));
 

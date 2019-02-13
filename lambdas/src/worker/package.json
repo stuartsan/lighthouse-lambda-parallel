@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "is-port-reachable": "^2.0.0",
     "lighthouse-lambda": "^3.1.1"
   }
 }

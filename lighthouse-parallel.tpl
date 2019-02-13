@@ -29,7 +29,23 @@ ddb_client = boto3.client('dynamodb', region_name=args.region)
 
 lambda_payload = {
     'urls': json.load(args.urls),
-    'runsPerUrl': args.runs
+    'runsPerUrl': args.runs,
+    # punch in your own options, from
+    # github.com/GoogleChrome/lighthouse/blob/888bd6dc9d927a734a8e20ea8a0248baa5b425ed/typings/externs.d.ts#L82-L119
+    'lighthouseOpts': {
+      'chromeFlags': [
+        '--headless',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-zygote',
+        '--no-sandbox',
+        '--single-process',
+        '--hide-scrollbars',
+        '--proxy-server=socks5://localhost:1080',
+      ],
+      'throttlingMethod': 'provided',
+      'disableDeviceEmulation': True
+    }
 }
 
 lambda_response = lambda_client.invoke(
