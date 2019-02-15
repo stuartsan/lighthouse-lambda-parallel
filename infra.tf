@@ -1,6 +1,6 @@
 # Plug in your unique configuration here 
 locals {
-  app_version         = "0.0.91"
+  app_version         = "0.0.94"
   org                 = "ss"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"
