@@ -38,13 +38,24 @@ Here is a picture of how it works:
 ## Requirements
 
 - aws account
-- aws access credentials (you'll need authorization to create pretty
-
-- touch lambdas/dist/init.zip lambdas/dist/worker.zip lambdas/dist/post-processor.zip
+- aws access credentials (pretty much admin access required, you'll be creating stuff)
 - Terraform (I'm using v0.11.11)
-- terraform init
-- terraform plan
-- terraform apply / yes
+- python3 (to invoke CLI)
+- boto3 (to invoke CLI)
 
-- python3 (to invoke script)
-- boto3 (to invoke script)
+## Deploy it
+
+- `touch lambdas/dist/init.zip lambdas/dist/worker.zip lambdas/dist/post-processor.zip`
+- Change the `locals` block in `infra.tf` as needed for your org name, region, creds file path, etc.
+- `terraform init`
+- `terraform plan`
+- `terraform apply / yes`
+
+## Run tests
+
+- Put JSON list of urls in `urls.json`
+- `./lighthouse-parallel urls.json --runs 1000`
+
+## Making changes
+- Infrastructure changes: just `terraform apply`
+- JS code changes: increment `locals.app_version` and then `terraform apply`
