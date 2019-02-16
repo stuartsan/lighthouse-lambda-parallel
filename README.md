@@ -42,16 +42,19 @@ Here is a picture of how it works:
 - Terraform (I'm using v0.11.11)
 - python3 (to invoke CLI)
 - boto3 (to invoke CLI)
+- nodejs 8.10
+- yarn
 
 ## Deploy it
 
 - `touch lambdas/dist/init.zip lambdas/dist/worker.zip lambdas/dist/post-processor.zip`
+- `yarn` to install dependencies inside each of the `lambdas/src` directories
 - Change the `locals` block in `infra.tf` as needed for your org name, region, creds file path, etc.
 - `terraform init`
 - `terraform plan`
-- `terraform apply / yes`
+- `terraform apply`
 
-## Run tests
+## Run lighthouse against multiple urls
 
 - Put JSON list of urls in `urls.json`
 - `./lighthouse-parallel urls.json --runs 1000`
