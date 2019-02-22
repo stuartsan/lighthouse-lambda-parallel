@@ -38,7 +38,7 @@ Here is a picture of how it works:
 ## Requirements
 
 - aws account
-- aws access credentials (pretty much admin access required, you'll be creating stuff)
+- aws access credentials (pretty much admin access required) (not really but you'll be creating a number of things -- see `infra.tf` to come up with the exact requirements)
 - Terraform (I'm using v0.11.11)
 - python3 (to invoke CLI)
 - boto3 (to invoke CLI)
@@ -61,4 +61,4 @@ Here is a picture of how it works:
 
 ## Making changes
 - Infrastructure changes: just `terraform apply`
-- JS code changes: increment `locals.app_version` and then `terraform apply`
+- JS code changes: increment `locals.app_version` and then `terraform apply` (probably not a great idea to use TF to manage the lambda functions' deployment, but this is a prototype, didn't want to add Another Tool)
