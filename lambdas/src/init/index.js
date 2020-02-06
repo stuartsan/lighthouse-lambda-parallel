@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
-const uuidv1 = require("uuid/v1");
+const uuid = require("uuid");
 const assert = require("assert");
+const uuidv1 = uuid.v1;
 
 AWS.config.update({ region: process.env.REGION });
 

@@ -151,7 +151,7 @@ exports.handler = async function(event, context) {
     throw new Error("Failed! On purpose though. Before LH run.");
   }
 
-  const { chrome, start } = await createLighthouse(url, {
+  const { browser, start } = await createLighthouse(url, {
     ...lighthouseOpts,
     output: ["json", "html"]
   });
@@ -166,7 +166,7 @@ exports.handler = async function(event, context) {
   // Ensure some kind of idempotency -- we don't want to increment the atomic
   // counter if it's already happened for this particular url/message.
   if (existsAlready) {
-    return chrome.kill();
+    return browser.close();
   }
 
   await updateJobItemAndCreateRunItem(jobId, "PageCountSuccess", runId, url);
@@ -184,5 +184,5 @@ exports.handler = async function(event, context) {
     console.log("error uploading reports to s3:", err);
   }
 
-  return chrome.kill();
+  return browser.close();
 };

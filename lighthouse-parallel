@@ -16,7 +16,7 @@ parser.add_argument('--runs', default=1, type=int,
 parser.add_argument(
     '--region',
     type=str,
-    default="${lambda_init_region}",
+    default="us-west-2",
     help='AWS region')
 
 parser.add_argument('urls', type=argparse.FileType('r'),
@@ -46,7 +46,7 @@ lambda_payload = {
 }
 
 lambda_response = lambda_client.invoke(
-    FunctionName='${lambda_init_arn}',
+    FunctionName='arn:aws:lambda:us-west-2:025342374102:function:lighthouse_init',
     Payload=json.dumps(lambda_payload),
 )
 
@@ -71,7 +71,7 @@ print(f'Job id: {job_id}')
 
 while True:
     response = ddb_client.get_item(
-        TableName='${jobs_table_name}',
+        TableName='LighthouseMetricsJobs',
         Key={'JobId': {'S': job_id}}
     )
 

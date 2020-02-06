@@ -9,3 +9,4 @@ reports/*
 analysis/*
 analyzeruns.py
 outliers.py
+.idea

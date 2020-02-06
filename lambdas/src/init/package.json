@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "uuid": "^3.3.2"
+    "assert": "^2.0.0",
+    "uuid": "^3.4.0"
   }
 }

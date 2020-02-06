@@ -1,19 +1,21 @@
-# Plug in your unique configuration here 
+# Plug in your unique configuration here
+# https://github.com/MomentFeedInc/lighthouse-lambda-parallel
+# If you make JS changes, bump app_version then terraform apply
 locals {
-  app_version         = "0.0.94"
-  org                 = "ss"
+  app_version         = "0.1.0"
+  org                 = "momentfeed"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"
-  aws_profile_name    = "lighthouseMetrics"
+  aws_profile_name    = "default"
 
   lambda_worker_memory  = 2048
   lambda_worker_timeout = 30
 }
 
 provider "aws" {
-  region                  = "${local.aws_region}"
-  shared_credentials_file = "${local.aws_creds_file_path}"
-  profile                 = "${local.aws_profile_name}"
+  region                  = local.aws_region
+  shared_credentials_file = local.aws_creds_file_path
+  profile                 = local.aws_profile_name
 }
 
 # Bucket for storing LH reports, and deployed lambda functions.
@@ -22,7 +24,7 @@ resource "aws_s3_bucket" "lighthouse_metrics" {
   acl    = "private"
 }
 
-# Here we will store job metadata, including status 
+# Here we will store job metadata, including status
 # (e.g. # of LH runs complete)
 resource "aws_dynamodb_table" "lighthouse_metrics_jobs" {
   name = "LighthouseMetricsJobs"
@@ -104,27 +106,27 @@ data "archive_file" "lambda_post_processor" {
 }
 
 resource "aws_s3_bucket_object" "lambda_init" {
-  bucket = "${aws_s3_bucket.lighthouse_metrics.id}"
+  bucket = aws_s3_bucket.lighthouse_metrics.id
 
   key    = "lambdas/v${local.app_version}/init.zip"
-  source = "${data.archive_file.lambda_init.output_path}"
-  etag   = "${md5(file("lambdas/dist/init.zip"))}"
+  source = data.archive_file.lambda_init.output_path
+  etag   = filemd5("lambdas/dist/init.zip")
 }
 
 resource "aws_s3_bucket_object" "lambda_worker" {
-  bucket = "${aws_s3_bucket.lighthouse_metrics.id}"
+  bucket = aws_s3_bucket.lighthouse_metrics.id
 
   key    = "lambdas/v${local.app_version}/worker.zip"
-  source = "${data.archive_file.lambda_worker.output_path}"
-  etag   = "${md5(file("lambdas/dist/worker.zip"))}"
+  source = data.archive_file.lambda_worker.output_path
+  etag   = filemd5("lambdas/dist/worker.zip")
 }
 
 resource "aws_s3_bucket_object" "lambda_post_processor" {
-  bucket = "${aws_s3_bucket.lighthouse_metrics.id}"
+  bucket = aws_s3_bucket.lighthouse_metrics.id
 
   key    = "lambdas/v${local.app_version}/post-processor.zip"
-  source = "${data.archive_file.lambda_post_processor.output_path}"
-  etag   = "${md5(file("lambdas/dist/post-processor.zip"))}"
+  source = data.archive_file.lambda_post_processor.output_path
+  etag   = filemd5("lambdas/dist/post-processor.zip")
 }
 
 resource "aws_iam_role" "lambda_init" {
@@ -149,7 +151,7 @@ EOF
 
 resource "aws_iam_role_policy" "lambda_init" {
   name = "lambda_init"
-  role = "${aws_iam_role.lambda_init.id}"
+  role = aws_iam_role.lambda_init.id
 
   policy = <<EOF
 {
@@ -185,19 +187,19 @@ EOF
 
 resource "aws_lambda_function" "init" {
   function_name = "lighthouse_init"
-  s3_bucket     = "${aws_s3_bucket.lighthouse_metrics.id}"
-  s3_key        = "${aws_s3_bucket_object.lambda_init.key}"
-  role          = "${aws_iam_role.lambda_init.arn}"
+  s3_bucket     = aws_s3_bucket.lighthouse_metrics.id
+  s3_key        = aws_s3_bucket_object.lambda_init.key
+  role          = aws_iam_role.lambda_init.arn
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs12.x"
   memory_size   = 2048
   timeout       = 30
 
   environment {
     variables = {
-      REGION        = "${local.aws_region}"
-      TABLE_NAME    = "${aws_dynamodb_table.lighthouse_metrics_jobs.id}"
-      SNS_TOPIC_ARN = "${aws_sns_topic.pages_to_test.arn}"
+      REGION        = local.aws_region
+      TABLE_NAME    = aws_dynamodb_table.lighthouse_metrics_jobs.id
+      SNS_TOPIC_ARN = aws_sns_topic.pages_to_test.arn
     }
   }
 }
@@ -224,7 +226,7 @@ EOF
 
 resource "aws_iam_role_policy" "lambda_worker" {
   name = "lambda_worker"
-  role = "${aws_iam_role.lambda_worker.id}"
+  role = aws_iam_role.lambda_worker.id
 
   policy = <<EOF
 {
@@ -282,26 +284,26 @@ EOF
 
 resource "aws_lambda_function" "worker" {
   function_name = "lighthouse_worker"
-  s3_bucket     = "${aws_s3_bucket.lighthouse_metrics.id}"
-  s3_key        = "${aws_s3_bucket_object.lambda_worker.key}"
-  role          = "${aws_iam_role.lambda_worker.arn}"
+  s3_bucket     = aws_s3_bucket.lighthouse_metrics.id
+  s3_key        = aws_s3_bucket_object.lambda_worker.key
+  role          = aws_iam_role.lambda_worker.arn
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs12.x"
 
-  memory_size = "${local.lambda_worker_memory}"
-  timeout     = "${local.lambda_worker_timeout}"
+  memory_size = local.lambda_worker_memory
+  timeout     = local.lambda_worker_timeout
 
-  dead_letter_config = {
-    target_arn = "${aws_sns_topic.pages_to_test_dlq.arn}"
+  dead_letter_config {
+    target_arn = aws_sns_topic.pages_to_test_dlq.arn
   }
 
   environment {
     variables = {
-      REGION          = "${local.aws_region}"
-      JOBS_TABLE_NAME = "${aws_dynamodb_table.lighthouse_metrics_jobs.id}"
-      RUNS_TABLE_NAME = "${aws_dynamodb_table.lighthouse_metrics_runs.id}"
-      BUCKET          = "${aws_s3_bucket.lighthouse_metrics.id}"
-      DLQ_ARN         = "${aws_sns_topic.pages_to_test_dlq.arn}"
+      REGION          = local.aws_region
+      JOBS_TABLE_NAME = aws_dynamodb_table.lighthouse_metrics_jobs.id
+      RUNS_TABLE_NAME = aws_dynamodb_table.lighthouse_metrics_runs.id
+      BUCKET          = aws_s3_bucket.lighthouse_metrics.id
+      DLQ_ARN         = aws_sns_topic.pages_to_test_dlq.arn
     }
   }
 }
@@ -309,30 +311,30 @@ resource "aws_lambda_function" "worker" {
 # the worker lambda should consume from the sns topic full of urls,
 # and the dlq topic
 resource "aws_sns_topic_subscription" "pages_to_test" {
-  topic_arn = "${aws_sns_topic.pages_to_test.arn}"
+  topic_arn = aws_sns_topic.pages_to_test.arn
   protocol  = "lambda"
-  endpoint  = "${aws_lambda_function.worker.arn}"
+  endpoint  = aws_lambda_function.worker.arn
 }
 
 resource "aws_sns_topic_subscription" "pages_to_test_dlq" {
-  topic_arn = "${aws_sns_topic.pages_to_test_dlq.arn}"
+  topic_arn = aws_sns_topic.pages_to_test_dlq.arn
   protocol  = "lambda"
-  endpoint  = "${aws_lambda_function.worker.arn}"
+  endpoint  = aws_lambda_function.worker.arn
 }
 
 # more permissions!
 resource "aws_lambda_permission" "pages_to_test" {
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.worker.function_name}"
+  function_name = aws_lambda_function.worker.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = "${aws_sns_topic.pages_to_test.arn}"
+  source_arn    = aws_sns_topic.pages_to_test.arn
 }
 
 resource "aws_lambda_permission" "pages_to_test_dlq" {
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.worker.function_name}"
+  function_name = aws_lambda_function.worker.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = "${aws_sns_topic.pages_to_test_dlq.arn}"
+  source_arn    = aws_sns_topic.pages_to_test_dlq.arn
 }
 
 resource "aws_iam_role" "lambda_post_processor" {
@@ -357,7 +359,7 @@ EOF
 
 resource "aws_iam_role_policy" "lambda_post_processor" {
   name = "lambda_post_processor"
-  role = "${aws_iam_role.lambda_post_processor.id}"
+  role = aws_iam_role.lambda_post_processor.id
 
   policy = <<EOF
 {
@@ -396,38 +398,38 @@ EOF
 
 resource "aws_lambda_function" "post_processor" {
   function_name = "lighthouse_post_processor"
-  s3_bucket     = "${aws_s3_bucket.lighthouse_metrics.id}"
-  s3_key        = "${aws_s3_bucket_object.lambda_post_processor.key}"
-  role          = "${aws_iam_role.lambda_post_processor.arn}"
+  s3_bucket     = aws_s3_bucket.lighthouse_metrics.id
+  s3_key        = aws_s3_bucket_object.lambda_post_processor.key
+  role          = aws_iam_role.lambda_post_processor.arn
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs12.x"
   memory_size   = 128
 
   environment {
     variables = {
-      TABLE_NAME = "${aws_dynamodb_table.lighthouse_metrics_jobs.id}"
+      TABLE_NAME = aws_dynamodb_table.lighthouse_metrics_jobs.id
     }
   }
 }
 
 resource "aws_lambda_event_source_mapping" "post_processor" {
-  event_source_arn  = "${aws_dynamodb_table.lighthouse_metrics_jobs.stream_arn}"
-  function_name     = "${aws_lambda_function.post_processor.arn}"
+  event_source_arn  = aws_dynamodb_table.lighthouse_metrics_jobs.stream_arn
+  function_name     = aws_lambda_function.post_processor.arn
   starting_position = "LATEST"
   batch_size        = 1
 }
 
 data "template_file" "invoke_lambda_function" {
-  template = "${file("lighthouse-parallel.tpl")}"
+  template = file("lighthouse-parallel.tpl")
 
   vars = {
-    lambda_init_arn    = "${aws_lambda_function.init.arn}"
-    lambda_init_region = "${local.aws_region}"
-    jobs_table_name    = "${aws_dynamodb_table.lighthouse_metrics_jobs.id}"
+    lambda_init_arn    = aws_lambda_function.init.arn
+    lambda_init_region = local.aws_region
+    jobs_table_name    = aws_dynamodb_table.lighthouse_metrics_jobs.id
   }
 }
 
 resource "local_file" "invoke_lambda_function" {
-  content  = "${data.template_file.invoke_lambda_function.rendered}"
+  content  = data.template_file.invoke_lambda_function.rendered
   filename = "lighthouse-parallel"
 }
