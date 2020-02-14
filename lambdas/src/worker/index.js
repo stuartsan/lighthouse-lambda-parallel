@@ -7,6 +7,7 @@ AWS.config.update({ region: process.env.REGION });
 
 const ddb = new AWS.DynamoDB.DocumentClient();
 const s3 = new AWS.S3();
+const ttl = 60 * 60 * 24 * 14;
 
 async function updateJobItemAndCreateRunItem(
   jobId,
@@ -32,7 +33,8 @@ async function updateJobItemAndCreateRunItem(
     TableName: process.env.RUNS_TABLE_NAME,
     Item: {
       JobId: jobId,
-      RunId: runId
+      RunId: runId,
+      TimeToExist: Math.floor(Date.now() / 1000) + ttl,
     }
   };
 
@@ -93,6 +95,9 @@ async function uploadReportsToS3(
 exports.handler = async function(event, context) {
   const record = event.Records[0];
 
+  console.log("ENVIRONMENT VARIABLES\n" + JSON.stringify(process.env, null, 2));
+  console.info("EVENT\n" + JSON.stringify(event, null, 2));
+
   // We are consuming this from the dead letter queue, which means,
   // we're giving up on processing it. Tell the job/run state about this fact
   // and bail. Why can't we just wrap the contents of our handler in try/catch
@@ -140,25 +145,27 @@ exports.handler = async function(event, context) {
 
   let existsAlready = await doesRunItemAlreadyExist(runId);
 
+
   // If the work is already done, probably, let's just bail before
   // doing anything time-intensive. (AWS says that it's possible that SNS
   // delivers the message to the same lambda more than once, though unlikely).
   if (existsAlready) {
+    console.log('EXISTS ALREADY', existsAlready);
     return Promise.resolve();
   }
 
   if (process.env.SIMULATE_EXCEPTION_BEFORE_LH_RUN) {
     throw new Error("Failed! On purpose though. Before LH run.");
   }
-
+  console.log('Creating Lighthouse');
   const { browser, start } = await createLighthouse(url, {
     ...lighthouseOpts,
     output: ["json", "html"]
   });
+  console.log('Awaiting Results');
   const results = await start();
-
   const [jsonReport, htmlReport] = results.report;
-
+  console.log('Report generated');
   // we pass true to make it a guaranteed consistent read, which is more
   // expensive and more accurate.
   existsAlready = await doesRunItemAlreadyExist(runId, true);

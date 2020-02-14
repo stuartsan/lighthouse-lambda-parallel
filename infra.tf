@@ -2,7 +2,7 @@
 # https://github.com/MomentFeedInc/lighthouse-lambda-parallel
 # If you make JS changes, bump app_version then terraform apply
 locals {
-  app_version         = "0.1.0"
+  app_version         = "0.1.4"
   org                 = "momentfeed"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"
@@ -38,6 +38,12 @@ resource "aws_dynamodb_table" "lighthouse_metrics_jobs" {
     type = "S"
   }
 
+  // I'm putting a ttl on all the tables because we don't really need the data forever
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = true
+  }
+
   stream_enabled = true
 
   stream_view_type = "NEW_AND_OLD_IMAGES"
@@ -67,6 +73,12 @@ resource "aws_dynamodb_table" "lighthouse_metrics_runs" {
   attribute {
     name = "JobId"
     type = "S"
+  }
+
+  // I'm putting a ttl on all the tables because we don't really need the data forever
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = true
   }
 }
 

@@ -7,6 +7,7 @@ AWS.config.update({ region: process.env.REGION });
 
 const sns = new AWS.SNS();
 const ddb = new AWS.DynamoDB.DocumentClient();
+const ttl = 60 * 60 * 24 * 14;
 
 async function createJobItemDynamo(jobId, startTime, totalPages) {
   return ddb
@@ -15,6 +16,7 @@ async function createJobItemDynamo(jobId, startTime, totalPages) {
       Item: {
         JobId: jobId,
         StartTime: startTime,
+        TimeToExist: Math.floor(Date.now() / 1000) + ttl,
         PageCountTotal: totalPages,
         PageCountSuccess: 0,
         PageCountError: 0
