@@ -2,7 +2,7 @@
 # https://github.com/MomentFeedInc/lighthouse-lambda-parallel
 # If you make JS changes, bump app_version then terraform apply
 locals {
-  app_version         = "0.1.15"
+  app_version         = "0.1.16"
   org                 = "momentfeed"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"
@@ -113,7 +113,7 @@ data "archive_file" "lambda_worker" {
 
 data "archive_file" "lambda_post_processor" {
   type        = "zip"
-  source_dir  = "lambdas/src/post-processor"
+  source_dir  = "lambdas/src/post-processor/dist"
   output_path = "lambdas/dist/post-processor.zip"
 }
 
