@@ -1,3 +1,14 @@
 [
-  "https://www.jamba.com/al/birmingham/university-of-alabama-uab-3102"
+  {
+    "url": "https://locations.visionworks.com/ll/US/AZ/Avondale/10285-West-McDowell-Rd",
+    "metadata": {
+      "accountId": "5a0f620db4e4b9623c00af7e"
+    }
+  },
+  {
+    "url": "https://locations.visionworks.com/ll/US/AZ/Casa-Grande/917-N-Promenade-Pkwy",
+    "metadata": {
+      "accountId": "5a0f620db4e4b9623c00af7e"
+    }
+  }
 ]

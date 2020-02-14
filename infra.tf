@@ -2,7 +2,7 @@
 # https://github.com/MomentFeedInc/lighthouse-lambda-parallel
 # If you make JS changes, bump app_version then terraform apply
 locals {
-  app_version         = "0.1.5"
+  app_version         = "0.1.8"
   org                 = "momentfeed"
   aws_region          = "us-west-2"
   aws_creds_file_path = "~/.aws/credentials"

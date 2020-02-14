@@ -14,6 +14,7 @@ async function updateJobItemAndCreateRunItem(
   jobAttrToIncrement,
   runId,
   runUrl,
+  runMetadata,
   runError
 ) {
   const updatedJob = {
@@ -35,9 +36,8 @@ async function updateJobItemAndCreateRunItem(
       JobId: jobId,
       RunId: runId,
       TimeToExist: Math.floor(Date.now() / 1000) + ttl,
-      JobMetadata: {
-        url: runUrl
-      }
+      Url: runUrl,
+      Metadata: runMetadata
     }
   };
 
@@ -115,9 +115,12 @@ exports.handler = async function(event, context) {
       JSON.stringify(originalRecord)
     );
 
-    let jobId;
+    let jobId, metadata;
     try {
       jobId = originalRecord.Sns.MessageAttributes.JobId.Value;
+      metadata = JSON.parse(
+        originalRecord.Sns.MessageAttributes.Metadata.Value
+      );
     } catch (err) {
       // If there is no jobId there it means we're stuck in a recursive loop
       // processing errors and we're just going to throw it out, there is
@@ -130,6 +133,7 @@ exports.handler = async function(event, context) {
       "PageCountError",
       originalRecord.Sns.MessageId,
       originalRecord.Sns.MessageAttributes.URL.Value,
+      metadata,
       `ended up in dlq: ${JSON.stringify(
         record.Sns.MessageAttributes.ErrorMessage.Value
       )}`
@@ -143,6 +147,9 @@ exports.handler = async function(event, context) {
   const runId = record.Sns.MessageId;
 
   const url = record.Sns.MessageAttributes.URL.Value;
+  const metadata = JSON.parse(
+    record.Sns.MessageAttributes.Metadata.Value
+  );
   const jsonReportS3Key = s3Key(jobId, runId, "json");
   const htmlReportS3Key = s3Key(jobId, runId, "html");
 
@@ -179,7 +186,7 @@ exports.handler = async function(event, context) {
     return browser.close();
   }
 
-  await updateJobItemAndCreateRunItem(jobId, "PageCountSuccess", runId, url);
+  await updateJobItemAndCreateRunItem(jobId, "PageCountSuccess", runId, url, metadata);
 
   try {
     await uploadReportsToS3(

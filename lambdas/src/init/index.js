@@ -35,7 +35,11 @@ const createSNSMessages = (urls, jobId, lighthouseOpts = {}) => {
       },
       URL: {
         DataType: "String",
-        StringValue: url
+        StringValue: url.url
+      },
+      Metadata: {
+        DataType: "String",
+        StringValue: JSON.stringify(url.metadata)
       },
       LighthouseOptions: {
         DataType: "String",
