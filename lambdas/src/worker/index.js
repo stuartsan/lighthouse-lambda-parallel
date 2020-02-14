@@ -35,6 +35,9 @@ async function updateJobItemAndCreateRunItem(
       JobId: jobId,
       RunId: runId,
       TimeToExist: Math.floor(Date.now() / 1000) + ttl,
+      JobMetadata: {
+        url: runUrl
+      }
     }
   };
 
