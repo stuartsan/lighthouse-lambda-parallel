@@ -35,30 +35,17 @@ Here is a picture of how it works:
                                                                      └─────────────────────┘                    
 ```
 
-## Requirements
+## Local installation and deploy
+There are three lambdas and they all need to be built. The resulting zip files also include all the dependencies they will need inside the lambda container. Each lambda build process facilitates this by using `webpack` to compile the lambda typescript code, then installing all the needed dependencies inside the `dist` folder, then terraform will zip them off and send them on their way.
+#### Install all lambda dependencies
+`npm run install-all`
+#### Build all the lamdbas
+`npm run build`
 
-- aws account
-- aws access credentials (pretty much admin access required) (not really but you'll be creating a number of things -- see `infra.tf` to come up with the exact requirements)
-- Terraform (I'm using v0.11.11)
-- python3 (to invoke CLI)
-- boto3 (to invoke CLI)
-- nodejs 8.10
-- yarn
-
-## Deploy it
-
-- `touch lambdas/dist/init.zip lambdas/dist/worker.zip lambdas/dist/post-processor.zip`
-- `yarn` to install dependencies inside each of the `lambdas/src` directories
-- Change the `locals` block in `infra.tf` as needed for your org name, region, creds file path, etc.
-- `terraform init`
-- `terraform plan`
-- `terraform apply`
+Next you can run `terraform apply` to push everything out, however if you have made any code changes you will first need to bump the version `locals.app_version` in `infra.tf` prior to the apply. 
 
 ## Run lighthouse against multiple urls
-
+Once you have deployed using terraform, you can run locally:
 - Put JSON list of urls in `urls.json`
-- `./lighthouse-parallel urls.json --runs 1000`
+- `./lighthouse-parallel urls.json --runs 2`
 
-## Making changes
-- Infrastructure changes: just `terraform apply`
-- JS code changes: increment `locals.app_version` and then `terraform apply` (probably not a great idea to use TF to manage the lambda functions' deployment, but this is a prototype, didn't want to add Another Tool)

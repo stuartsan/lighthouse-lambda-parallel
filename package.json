@@ -7,7 +7,9 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint lambdas/",
-    "fmt": "terraform fmt && prettier lambdas/**/*.js *.js --write"
+    "fmt": "terraform fmt && prettier lambdas/**/*.js *.js --write",
+    "install-all": "(cd lambdas/src/init && npm i) && (cd lambdas/src/post-processor && npm i) && (cd lambdas/src/worker && npm i)",
+    "build": "(cd lambdas/src/init && npm run build) && (cd lambdas/src/post-processor && npm run build) && (cd lambdas/src/worker && npm run build)"
   },
   "devDependencies": {
     "eslint": "^5.13.0",
