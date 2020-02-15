@@ -33,7 +33,7 @@ lambda_payload = {
     # punch in your own options, from
     # github.com/GoogleChrome/lighthouse/blob/888bd6dc9d927a734a8e20ea8a0248baa5b425ed/typings/externs.d.ts#L82-L119
     'lighthouseOpts': {
-      'logLevel': 'info',
+      # 'logLevel': 'info',
       'chromeFlags': [
         '--headless',
         '--disable-dev-shm-usage',

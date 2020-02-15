@@ -1,3 +1,6 @@
+/**
+ * This is inherited by the other modules, but can also be overriden as needed
+ */
 module.exports = {
   mode: "production",
   target: "node",

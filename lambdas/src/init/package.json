@@ -1,4 +1,10 @@
 {
+  "name": "init",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "npm ci && npx webpack"
+  },
   "dependencies": {
     "assert": "^2.0.0",
     "uuid": "^3.4.0"

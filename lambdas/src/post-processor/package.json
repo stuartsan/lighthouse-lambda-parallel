@@ -1,14 +1,14 @@
 {
   "name": "post-processor",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "npm ci && npx webpack"
+  },
   "dependencies": {},
   "devDependencies": {
-    "@types/assert": "^1.4.6",
     "@types/aws-sdk": "^2.7.0",
     "@types/node": "^13.7.1",
-    "@types/uuid": "^3.4.7",
     "awesome-typescript-loader": "^5.2.1",
     "clean-webpack-plugin": "^3.0.0",
     "terser-webpack-plugin": "^2.3.4",
