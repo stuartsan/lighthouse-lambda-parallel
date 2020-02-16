@@ -41,6 +41,8 @@ There are three lambdas and they all need to be built. The resulting zip files a
 `npm run install-all`
 #### Build all the lamdbas
 `npm run build`
+#### To clean 
+`npm run clean`
 
 Next you can run `terraform apply` to push everything out, however if you have made any code changes you will first need to bump the version `locals.app_version` in `infra.tf` prior to the apply. 
 

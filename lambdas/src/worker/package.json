@@ -6,7 +6,7 @@
     "build": "npx webpack && (cp ./package.json dist/package.json && cd dist && npm i --production)"
   },
   "dependencies": {
-    "chrome-aws-lambda": "^2.0.2",
+    "chrome-aws-lambda": "^2.1.1",
     "chrome-launcher": "^0.12.0",
     "fs": "^0.0.1-security",
     "is-port-reachable": "^2.0.0",

@@ -8,15 +8,16 @@
   "scripts": {
     "lint": "eslint lambdas/",
     "fmt": "terraform fmt && prettier lambdas/**/*.js *.js --write",
-    "install-all": "(cd lambdas/src/init && npm i) && (cd lambdas/src/post-processor && npm i) && (cd lambdas/src/worker && npm i)",
-    "build": "(cd lambdas/src/init && npm run build) && (cd lambdas/src/post-processor && npm run build) && (cd lambdas/src/worker && npm run build)"
+    "clean": "rm -rf lambdas/dist && (cd lambdas/src/init && rm -rf node_modules dist) && (cd lambdas/src/post-processor  && rm -rf node_modules dist) && (cd lambdas/src/worker && rm -rf node_modules dist) && mkdir lambdas/dist && (cd lambdas/dist && touch init.zip && touch post-processor.zip && touch worker.zip)",
+    "install-all": "npm i && (cd lambdas/src/init && npm i) && (cd lambdas/src/post-processor && npm i) && (cd lambdas/src/worker && npm i)",
+    "build": "npm i && (cd lambdas/src/init && npm run build) && (cd lambdas/src/post-processor && npm run build) && (cd lambdas/src/worker && npm run build)"
   },
   "devDependencies": {
-    "eslint": "^5.13.0",
-    "eslint-config-prettier": "^4.0.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-prettier": "^3.0.1",
-    "prettier": "^1.16.4"
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1"
   },
   "dependencies": {}
 }
