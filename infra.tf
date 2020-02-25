@@ -421,9 +421,10 @@ data "template_file" "invoke_lambda_function" {
   template = "${file("lighthouse-parallel.tpl")}"
 
   vars = {
-    lambda_init_arn    = "${aws_lambda_function.init.arn}"
-    lambda_init_region = "${local.aws_region}"
-    jobs_table_name    = "${aws_dynamodb_table.lighthouse_metrics_jobs.id}"
+    lambda_aws_profile_name = "${local.aws_profile_name}"
+    lambda_init_arn         = "${aws_lambda_function.init.arn}"
+    lambda_init_region      = "${local.aws_region}"
+    jobs_table_name         = "${aws_dynamodb_table.lighthouse_metrics_jobs.id}"
   }
 }
 
