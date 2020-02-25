@@ -24,8 +24,10 @@ parser.add_argument('urls', type=argparse.FileType('r'),
 
 args = parser.parse_args()
 
-lambda_client = boto3.client('lambda', region_name=args.region)
-ddb_client = boto3.client('dynamodb', region_name=args.region)
+session = boto3.Session(profile_name="${lambda_aws_profile_name}")
+
+lambda_client = session.client('lambda', region_name=args.region)
+ddb_client = session.client('dynamodb', region_name=args.region)
 
 lambda_payload = {
     'urls': json.load(args.urls),
